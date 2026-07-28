@@ -27,17 +27,15 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _obscurePassword = true;
 
   void _login() {
     if (_formKey.currentState!.validate()) {
+      String username = _usernameController.text;
       String email = _emailController.text;
-      String password = _passwordController.text;
 
-      if (email == "admin@gmail.com" && password == "123456") {
+      if (username == "admin" && email == "admin@gmail.com") {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Login Berhasil"),
@@ -47,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Email atau Password Salah"),
+            content: Text("Username atau Email Salah"),
             backgroundColor: Colors.red,
           ),
         );
@@ -57,8 +55,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -80,14 +78,34 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.lock,
+                    Icons.person,
                     size: 80,
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 30),
 
+                  // Username
+                  TextFormField(
+                    controller: _usernameController,
+                    decoration: const InputDecoration(
+                      labelText: "Username",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Username tidak boleh kosong";
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Email
                   TextFormField(
                     controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: "Email",
                       border: OutlineInputBorder(),
@@ -97,38 +115,8 @@ class _LoginPageState extends State<LoginPage> {
                       if (value == null || value.isEmpty) {
                         return "Email tidak boleh kosong";
                       }
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Password tidak boleh kosong";
-                      }
-                      if (value.length < 6) {
-                        return "Password minimal 6 karakter";
+                      if (!value.contains("@")) {
+                        return "Format email tidak valid";
                       }
                       return null;
                     },
