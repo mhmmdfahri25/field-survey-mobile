@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/auth/dasboard_page.dart';
+import 'package:flutter_application_2/screens/dashboard/dasboard_page.dart';
 import 'package:flutter_application_2/screens/auth/register_page.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/splash/splash_screen.dart';
