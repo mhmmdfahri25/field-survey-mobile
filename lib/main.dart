@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/auth/login_screen.dart';
-import 'package:flutter_application_2/screens/splash/splash_screen.dart';
+import 'routes/app_pages.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen()
+      routerConfig: AppPages.router,
     );
   }
 }
