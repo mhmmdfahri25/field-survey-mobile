@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/auth/login_screen.dart';
+import 'package:flutter_application_2/screens/profile/profile_page.dart';
+import 'package:flutter_application_2/screens/auth/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,15 +18,49 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int _selectedIndex = 0;
+
   static const _menus = [
-    _MenuItem("Produk", Icons.inventory_2_rounded),
-    _MenuItem("Pelanggan", Icons.people_alt_rounded),
-    _MenuItem("Transaksi", Icons.receipt_long_rounded),
-    _MenuItem("Laporan", Icons.bar_chart_rounded),
+    _MenuItem("Home", Icons.home_rounded),
+    _MenuItem("Survey", Icons.assignment_rounded),
+    _MenuItem("Profile", Icons.person_rounded),
   ];
+
+  void _openMenu(String title) {
+    if (title == "Profile") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfilePage()),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Buka menu $title")),
+    );
+  }
+
+  void _onNavTap(int index) {
+    setState(() => _selectedIndex = index);
+
+    // Index 2 = Profile -> pindah ke halaman Profile
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfilePage()),
+      ).then((_) {
+        // Balik lagi ke tab Home setelah kembali dari Profile
+        setState(() => _selectedIndex = 0);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +85,17 @@ class DashboardPage extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    shape: BoxShape.circle,
+                InkWell(
+                  onTap: () => _openMenu("Profile"),
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person, color: Colors.white, size: 26),
                   ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 26),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -94,9 +133,35 @@ class DashboardPage extends StatelessWidget {
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
                 childAspectRatio: 1.15,
-                children: _menus.map((m) => _MenuCard(item: m)).toList(),
+                children: _menus
+                    .map((m) => _MenuCard(item: m, onTap: () => _openMenu(m.title)))
+                    .toList(),
               ),
             ),
+          ),
+        ],
+      ),
+
+      // Bottom navigation bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavTap,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF4F46E5),
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_rounded),
+            label: "Survey",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: "Profile",
           ),
         ],
       ),
@@ -112,7 +177,8 @@ class _MenuItem {
 
 class _MenuCard extends StatelessWidget {
   final _MenuItem item;
-  const _MenuCard({required this.item});
+  final VoidCallback onTap;
+  const _MenuCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -121,11 +187,7 @@ class _MenuCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Buka menu ${item.title}")),
-          );
-        },
+        onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),

@@ -3,7 +3,7 @@ import 'package:flutter_application_2/screens/dashboard/dasboard_page.dart';
 import 'package:flutter_application_2/screens/auth/register_page.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/splash/splash_screen.dart';
-import '../screens/auth/login_screen.dart';
+import '../screens/auth/login_page.dart';
 
 import 'app_routes.dart';
 

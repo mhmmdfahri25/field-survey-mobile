@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/auth/login_screen.dart';
+import 'package:flutter_application_2/screens/auth/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(
               Icons.assignment,
               size: 100,
-              color: Colors.blue,
+              color: Color.fromARGB(255, 130, 54, 229),
             ),
             SizedBox(height: 20),
             Text(
