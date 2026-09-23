@@ -1,22 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/profile/profile_page.dart';
+import 'package:flutter_application_2/screens/dashboard/survey_page.dart';
 import 'package:flutter_application_2/screens/profile/profile_page.dart';
-import 'package:flutter_application_2/screens/auth/login_page.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: DashboardPage(),
-    );
-  }
-}
+// import 'package:flutter_application_2/screens/profile/profile_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -27,141 +14,69 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _selectedIndex = 0;
+  String? token;
 
-  static const _menus = [
-    _MenuItem("Home", Icons.home_rounded),
-    _MenuItem("Survey", Icons.assignment_rounded),
-    _MenuItem("Profile", Icons.person_rounded),
-  ];
-
-  void _openMenu(String title) {
-    if (title == "Profile") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfilePage()),
-      );
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Buka menu $title")),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
   }
 
-  void _onNavTap(int index) {
-    setState(() => _selectedIndex = index);
+  Future<void> _loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
 
-    // Index 2 = Profile -> pindah ke halaman Profile
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfilePage()),
-      ).then((_) {
-        // Balik lagi ke tab Home setelah kembali dari Profile
-        setState(() => _selectedIndex = 0);
-      });
-    }
+    setState(() {
+      token = prefs.getString('token');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      body: Column(
+      body: IndexedStack(
+        index: _selectedIndex,
         children: [
-          // Header gradient, senada dengan halaman login
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 28),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
-              ),
+          const HomePage(),
+          const SurveyScreen(),
+          if (token != null && token!.isNotEmpty)
+            ProfilePage(token: token!)
+          else
+            const Center(
+              child: CircularProgressIndicator(),
             ),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: () => _openMenu("Profile"),
-                  borderRadius: BorderRadius.circular(30),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person, color: Colors.white, size: 26),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Selamat datang 👋",
-                          style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      Text("Dashboard",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  onPressed: () => Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Grid menu
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 1.15,
-                children: _menus
-                    .map((m) => _MenuCard(item: m, onTap: () => _openMenu(m.title)))
-                    .toList(),
-              ),
-            ),
-          ),
         ],
       ),
 
-      // Bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onNavTap,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF4F46E5),
+
+        backgroundColor: Colors.white,
+
+        selectedItemColor: Color(0xFF4F46E5),
+
         unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
+
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: "Home",
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
+
           BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_rounded),
-            label: "Survey",
+            icon: Icon(Icons.assignment),
+            label: 'Survey',
           ),
+
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: "Profile",
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
@@ -169,53 +84,197 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-class _MenuItem {
-  final String title;
-  final IconData icon;
-  const _MenuItem(this.title, this.icon);
-}
-
-class _MenuCard extends StatelessWidget {
-  final _MenuItem item;
-  final VoidCallback onTap;
-  const _MenuCard({required this.item, required this.onTap});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                  color: const Color(0xFF4F46E5).withOpacity(0.08),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6)),
-            ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FF),
+
+      appBar: AppBar(
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(item.icon, color: Colors.white, size: 26),
+        ),
+
+        // Warna disamakan dengan Profile
+        backgroundColor: const Color(0xFF4F46E5),
+        foregroundColor: Colors.white,
+
+        elevation: 0,
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            const Text(
+              'Selamat Datang 👋',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-              const SizedBox(height: 12),
-              Text(item.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Silakan pilih menu yang ingin kamu gunakan.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // CARD SURVEY
+            Container(
+              width: double.infinity,
+
+              padding: const EdgeInsets.all(20),
+
+              decoration: BoxDecoration(
+                color: Colors.white,
+
+                borderRadius: BorderRadius.circular(20),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+
+              child: Row(
+                children: [
+                  Container(
+                    width: 55,
+                    height: 55,
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+
+                    child: const Icon(
+                      Icons.assignment,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Text(
+                          'Survey',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 5),
+
+                        Text(
+                          'Lihat dan isi survey yang tersedia.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // CARD PROFILE
+            Container(
+              width: double.infinity,
+
+              padding: const EdgeInsets.all(20),
+
+              decoration: BoxDecoration(
+                color: Colors.white,
+
+                borderRadius: BorderRadius.circular(20),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+
+              child: Row(
+                children: [
+                  Container(
+                    width: 55,
+                    height: 55,
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Text(
+                          'Profile',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 5),
+
+                        Text(
+                          'Lihat dan ubah data profile kamu.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

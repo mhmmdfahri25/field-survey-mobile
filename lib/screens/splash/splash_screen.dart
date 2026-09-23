@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(
               Icons.assignment,
               size: 100,
-              color: Color.fromARGB(255, 130, 54, 229),
+              color: const Color(0xFF4F46E5),
             ),
             SizedBox(height: 20),
             Text(
